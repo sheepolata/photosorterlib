@@ -18,7 +18,7 @@ def main():
 
     photosorterlib.sorter_starter(photosorterlib.get_photo_files(photosorterlib.get_all_files_from(input_folder)),
                                   output_folder,
-                                  get_gps=False)
+                                  get_gps=True)
 
     input("Finished! Press enter to quit.")
 
