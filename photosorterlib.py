@@ -9,6 +9,7 @@ import warnings
 import shutil
 import time
 import numpy as np
+import tqdm
 
 
 SUPPRESS_WARNINGS = True
@@ -105,9 +106,10 @@ def sorter_verbose(photo_file_list, output_dir):
 
     times = []
 
-    print(f"Processing {nb_file} files...")
+    # print(f"Processing {nb_file} files...")
 
-    for pf in photo_file_list:
+    for i in tqdm.tqdm(range(len(photo_file_list)), unit="file"):
+        pf = photo_file_list[i]
         _to_print = f"\rProcessing {pf}"
         t = time.time()
         copy_file_to_new_folder(pf, output_dir)
@@ -118,7 +120,7 @@ def sorter_verbose(photo_file_list, output_dir):
         file_processed += 1
         _to_print += f" --- {round(float(file_processed)/float(nb_file) * 100.0, 2)}%"
         _to_print += f" --- {round(np.mean(times) * (nb_file-file_processed), 2)}s remaining"
-        print(f"\r{_to_print}", end="")
+        # print(f"\r{_to_print}", end="")
 
 
 def sorter_starter(photo_file_list, output_dir):
