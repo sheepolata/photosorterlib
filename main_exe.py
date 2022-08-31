@@ -1,5 +1,4 @@
 import photosorterlib
-import sys
 
 
 def main():
