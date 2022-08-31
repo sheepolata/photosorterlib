@@ -17,7 +17,8 @@ def main():
         print(f"Copying and ordering photos from {input_folder} to {output_folder}.")
 
     photosorterlib.sorter_starter(photosorterlib.get_photo_files(photosorterlib.get_all_files_from(input_folder)),
-                                  output_folder)
+                                  output_folder,
+                                  get_gps=False)
 
     input("Finished! Press enter to quit.")
 

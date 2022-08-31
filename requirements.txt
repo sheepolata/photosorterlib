@@ -2,3 +2,5 @@ Pillow
 numpy
 tqdm
 cx-Freeze
+exif
+geopy

@@ -1,5 +1,6 @@
 from PIL import Image
 from PIL.ExifTags import TAGS
+from PIL.ExifTags import GPSTAGS
 import os
 import re
 from datetime import datetime
@@ -8,6 +9,8 @@ import shutil
 import time
 import numpy as np
 import tqdm
+
+import exifgpslib
 
 
 SUPPRESS_WARNINGS = True
@@ -36,15 +39,13 @@ def get_meta_data(image):
         # get the tag name, instead of human unreadable tag id
         tag = TAGS.get(tag_id, tag_id)
         data = exif_data.get(tag_id)
-        # decode bytes
+
         if isinstance(data, bytes):
             try:
                 data = data.decode()
             except UnicodeDecodeError as e:
                 if not SUPPRESS_WARNINGS:
                     warnings.warn(f"{info_dict['Filename']}'s exif data {tag} cannot be decoded")
-                # print(info_dict['Filename'])
-                # print(tag)
         info_dict[tag] = data
 
     return info_dict
@@ -74,16 +75,30 @@ def get_photo_files(file_list):
     return new_list
 
 
-def copy_file_to_new_folder(file_name, output_dir):
+def copy_file_to_new_folder(file_name, output_dir, get_gps=True):
     image = Image.open(file_name)
     exifdata = get_meta_data(image)
     image.close()
 
-    photo_date = datetime.strptime(exifdata['DateTime'], "%Y:%m:%d %H:%M:%S")
+    if get_gps:
+        gps_data = exifgpslib.get_location_data(file_name)
+    else:
+        gps_data = None
 
-    year_folder = f"{photo_date.year}"
-    month_folder = f"{photo_date.strftime('%B')}"
-    output_folder = f"{year_folder}/{month_folder}"
+    try:
+        photo_date = datetime.strptime(exifdata['DateTime'], "%Y:%m:%d %H:%M:%S")
+        year_folder = f"{photo_date.year}"
+        month_folder = f"{photo_date.strftime('%B')}"
+        output_folder = f"{year_folder}/{month_folder}"
+    except KeyError:
+        output_folder = "Others"
+
+    if gps_data is not None:
+        if "nodata" in gps_data:
+            output_folder += "/Unlocalised"
+        else:
+            output_folder += f"/{gps_data['City']}"
+
 
     # if not os.path.exists(f"{output_dir}/{year_folder}"):
     #     os.makedirs(f"{output_dir}/{year_folder}")
@@ -93,12 +108,12 @@ def copy_file_to_new_folder(file_name, output_dir):
     shutil.copy2(file_name, f"{output_dir}/{output_folder}")
 
 
-def sorter(photo_file_list, output_dir):
+def sorter(photo_file_list, output_dir, get_gps=True):
     for pf in photo_file_list:
-        copy_file_to_new_folder(pf, output_dir)
+        copy_file_to_new_folder(pf, output_dir, get_gps=get_gps)
 
 
-def sorter_verbose(photo_file_list, output_dir):
+def sorter_verbose(photo_file_list, output_dir, get_gps=True):
     nb_file = len(photo_file_list)
     file_processed = 0
 
@@ -110,7 +125,7 @@ def sorter_verbose(photo_file_list, output_dir):
         pf = photo_file_list[i]
         _to_print = f"\rProcessing {pf}"
         t = time.time()
-        copy_file_to_new_folder(pf, output_dir)
+        copy_file_to_new_folder(pf, output_dir, get_gps=get_gps)
         duration = time.time() - t
 
         times.append(duration)
@@ -121,8 +136,8 @@ def sorter_verbose(photo_file_list, output_dir):
         # print(f"\r{_to_print}", end="")
 
 
-def sorter_starter(photo_file_list, output_dir):
+def sorter_starter(photo_file_list, output_dir, get_gps=True):
     if VERBOSE:
-        sorter_verbose(photo_file_list, output_dir)
+        sorter_verbose(photo_file_list, output_dir, get_gps=get_gps)
     else:
-        sorter(photo_file_list, output_dir)
+        sorter(photo_file_list, output_dir, get_gps=get_gps)
