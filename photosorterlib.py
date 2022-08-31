@@ -14,7 +14,7 @@ import numpy as np
 SUPPRESS_WARNINGS = True
 VERBOSE = False
 
-VALID_FILE_EXTENSIONS = [".PNG", ".png", ".JPG", ".jpg"]
+VALID_FILE_EXTENSIONS = [".PNG", ".png", ".JPG", ".jpg", ".jpeg"]
 VALID_FILE_EXTENSIONS_REGEX = []
 for exten in VALID_FILE_EXTENSIONS:
     VALID_FILE_EXTENSIONS_REGEX.append('\\' + f"{exten}$")
