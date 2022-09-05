@@ -21,6 +21,10 @@ VALID_FILE_EXTENSIONS_REGEX = []
 for exten in VALID_FILE_EXTENSIONS:
     VALID_FILE_EXTENSIONS_REGEX.append('\\' + f"{exten}$")
 
+TOTAL_PHOTOS = 0
+PROCESSED_PHOTOS = 0
+GUI_PRINT = ""
+
 
 def get_meta_data(image):
     info_dict = {
@@ -109,8 +113,23 @@ def copy_file_to_new_folder(file_name, output_dir, get_gps=True):
 
 
 def sorter(photo_file_list, output_dir, get_gps=True):
+    global PROCESSED_PHOTOS, TOTAL_PHOTOS, GUI_PRINT
+    TOTAL_PHOTOS = len(photo_file_list)
+
+    nb_file = len(photo_file_list)
+    file_processed = 0
+    times = []
     for pf in photo_file_list:
+        PROCESSED_PHOTOS += 1
+        _to_print = f"Processing {pf}"
+        t = time.time()
         copy_file_to_new_folder(pf, output_dir, get_gps=get_gps)
+        duration = time.time() - t
+        times.append(duration)
+        file_processed += 1
+        _to_print += f" --- {round(float(file_processed) / float(nb_file) * 100.0, 2)}%"
+        _to_print += f" --- {round(np.mean(times) * (nb_file - file_processed), 2)}s remaining"
+        GUI_PRINT = _to_print
 
 
 def sorter_verbose(photo_file_list, output_dir, get_gps=True):
@@ -137,6 +156,9 @@ def sorter_verbose(photo_file_list, output_dir, get_gps=True):
 
 
 def sorter_starter(photo_file_list, output_dir, get_gps=True):
+    global TOTAL_PHOTOS, PROCESSED_PHOTOS
+    TOTAL_PHOTOS = 0
+    PROCESSED_PHOTOS = 0
     if VERBOSE:
         sorter_verbose(photo_file_list, output_dir, get_gps=get_gps)
     else:
