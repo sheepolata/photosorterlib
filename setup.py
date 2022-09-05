@@ -2,11 +2,11 @@ import sys
 from cx_Freeze import setup, Executable
 
 base = None
-# if sys.platform == 'win32':
-#     base = 'Win32GUI'
+if sys.platform == 'win32':
+    base = 'Win32GUI'
 
 exe = Executable(
-    script="main_exe.py",
+    script="gui.py",
     base=base,
     target_name='Photo Sorter' if sys.platform == 'Linux' else "Photo Sorter.exe",
     icon='data/tri.ico'
