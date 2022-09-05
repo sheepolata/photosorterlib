@@ -16,6 +16,7 @@ class PhotoSorterGUI(tk.Tk):
         self.resizable(0, 0)
         self.eval('tk::PlaceWindow . center')
         self.sorter_thread = None
+        self.set_disabled = False
 
         # self.grid_columnconfigure(0, minsize=75, weight=1)
         self.grid_columnconfigure(1, minsize=420)
@@ -36,8 +37,8 @@ class PhotoSorterGUI(tk.Tk):
         self.input_entry.grid(column=1, row=0, sticky="we", padx=5, pady=5)
 
         # login button
-        input_browse_button = ttk.Button(self, text="Browse", command=self.browse_input_on_press)
-        input_browse_button.grid(column=2, row=0, sticky=tk.E, padx=5, pady=5)
+        self.input_browse_button = ttk.Button(self, text="Browse", command=self.browse_input_on_press)
+        self.input_browse_button.grid(column=2, row=0, sticky=tk.E, padx=5, pady=5)
 
         # password
         output_folder = ttk.Label(self, text="Output folder:")
@@ -48,12 +49,12 @@ class PhotoSorterGUI(tk.Tk):
         self.output_entry = ttk.Entry(self, textvariable=self.output_entry_var_short)
         self.output_entry.grid(column=1, row=1, sticky="we", padx=5, pady=5)
 
-        output_browse_button = ttk.Button(self, text="Browse", command=self.browse_output_on_press)
-        output_browse_button.grid(column=2, row=1, sticky=tk.E, padx=5, pady=5)
+        self.output_browse_button = ttk.Button(self, text="Browse", command=self.browse_output_on_press)
+        self.output_browse_button.grid(column=2, row=1, sticky=tk.E, padx=5, pady=5)
 
         self.gps_var = tk.IntVar()
-        gps_tick = tk.Checkbutton(self, text='Get GPS', variable=self.gps_var, onvalue=1, offvalue=0)
-        gps_tick.grid(column=1, row=3, sticky=tk.W, padx=5, pady=5)
+        self.gps_tick = tk.Checkbutton(self, text='Get GPS', variable=self.gps_var, onvalue=1, offvalue=0)
+        self.gps_tick.grid(column=1, row=3, sticky=tk.W, padx=5, pady=5)
 
         start_button = ttk.Button(self, text="Go!", command=self.go_on_press)
         start_button.grid(column=1, row=3, sticky=tk.E, padx=5, pady=5)
@@ -84,6 +85,13 @@ class PhotoSorterGUI(tk.Tk):
         self.output_entry_var_short.set(_output)
 
     def go_on_press(self):
+        self.input_entry.config(state='disabled')
+        self.output_entry.config(state='disabled')
+        self.input_browse_button.config(state='disabled')
+        self.output_browse_button.config(state='disabled')
+        self.gps_tick.config(state='disabled')
+        self.set_disabled = True
+
         self.sorter_thread = threading.Thread(target=photosorterlib.sorter_starter,
                                               args=(photosorterlib.get_photo_files(photosorterlib.get_all_files_from(self.input_entry_var.get())),
                                                    self.output_entry_var.get(),
@@ -104,6 +112,13 @@ class PhotoSorterGUI(tk.Tk):
             _print = _print.replace(_print_tab_file, _new_print_tab_file)
         if 0 < photosorterlib.TOTAL_PHOTOS == photosorterlib.PROCESSED_PHOTOS:
             self.loading_var.set(f"{_print} - Done!")
+            if self.set_disabled:
+                self.input_entry.config(state='enabled')
+                self.output_entry.config(state='enabled')
+                self.input_browse_button.config(state='enabled')
+                self.output_browse_button.config(state='enabled')
+                self.gps_tick.config(state='active')
+                self.set_disabled = False
         else:
             self.loading_var.set(f"{_print}")
         self.after(100, self.update_loading_bar)
